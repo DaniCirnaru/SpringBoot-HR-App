@@ -1,0 +1,15 @@
+server:
+  port: 8082
+  tomcat:
+    relaxed-path-chars: '[,],|,{,}'
+    relaxed-query-chars: '[,],|,{,}'
+
+user:
+  service:
+    url:  http://localhost:8081/api/users
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
