@@ -1,6 +1,7 @@
 package com.ucv.us.service;
 
 
+import com.ucv.us.dto.CandidateCreatedEvent;
 import com.ucv.us.dto.CreateUserDTO;
 import com.ucv.us.dto.UserDTO;
 import com.ucv.us.entity.Role;
@@ -24,14 +25,17 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
     public UserService(UserRepository userRepository, RoleRepository roleRepository,
-                       UserMapper userMapper, PasswordEncoder passwordEncoder) {
+                       UserMapper userMapper, PasswordEncoder passwordEncoder,
+                       KafkaProducerService kafkaProducerService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;  // Initialize BCrypt Encoder
+        this.passwordEncoder = passwordEncoder;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     // Register a new user
@@ -47,6 +51,18 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
 
         User savedUser = userRepository.save(user);
+
+        // Send Kafka event if role is CANDIDATE
+        if ("CANDIDATE".equalsIgnoreCase(role.getName())) {
+            CandidateCreatedEvent event = new CandidateCreatedEvent(
+                    savedUser.getId().toString(),
+                    savedUser.getEmail(),
+                    savedUser.getUsername()
+            );
+            kafkaProducerService.sendCandidateCreatedEvent(event);
+        }
+
+
         return userMapper.toDto(savedUser);
     }
 

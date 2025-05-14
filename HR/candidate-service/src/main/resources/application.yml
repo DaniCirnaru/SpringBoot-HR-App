@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: candidate-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/candidateservice
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: candidate-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+        spring.json.value.default.type: com.ucv.cs.dto.CandidateCreatedEvent
+        spring.json.type.mapping: com.ucv.us.dto.CandidateCreatedEvent:com.ucv.cs.dto.CandidateCreatedEvent
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+user:
+  service:
+    url: http://localhost:8083
+
+logging:
+  level:
+    root: INFO
+    com.ucv.cs: DEBUG
+
+server:
+  port: 8084
+
+management:
+  endpoints:
+    web:
+      exposure: "*"
+  endpoint:
+    health:
+      show-details: always
