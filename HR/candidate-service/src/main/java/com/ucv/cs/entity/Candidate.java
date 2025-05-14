@@ -48,7 +48,7 @@ public class Candidate {
      * Candidate's CV file stored as a binary blob.
      */
     @Lob
-    @Column(name = "cv_data", columnDefinition = "BLOB")
+    @Column(name = "cv_data", columnDefinition = "LONGBLOB")
     private byte[] cvData;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -62,7 +62,4 @@ public class Candidate {
     @Enumerated(EnumType.STRING)
     @Column(name = "cv_parse_status")
     private CvParseStatus cvParseStatus;
-
-
-
 }
