@@ -21,6 +21,7 @@
     <module>auth-service</module>
       <module>api-gateway</module>
       <module>candidate-service</module>
+    <module>employee-service</module>
   </modules>
 
 

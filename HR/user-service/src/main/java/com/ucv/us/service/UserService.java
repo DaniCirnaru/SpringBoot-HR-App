@@ -3,6 +3,7 @@ package com.ucv.us.service;
 
 import com.ucv.us.dto.CandidateCreatedEvent;
 import com.ucv.us.dto.CreateUserDTO;
+import com.ucv.us.dto.EmployeeCreatedEvent;
 import com.ucv.us.dto.UserDTO;
 import com.ucv.us.entity.Role;
 import com.ucv.us.entity.User;
@@ -62,6 +63,19 @@ public class UserService {
             kafkaProducerService.sendCandidateCreatedEvent(event);
         }
 
+        if ("EMPLOYEE".equalsIgnoreCase(role.getName())) {
+            EmployeeCreatedEvent event = new EmployeeCreatedEvent(
+                    savedUser.getId().toString(),
+                    savedUser.getEmail(),
+                    savedUser.getUsername(),
+                    "Software Engineer",  // Placeholder
+                    "Engineering",        // Placeholder
+                    "FULL_TIME",          // Placeholder
+                    "2025-05-15",         // You can use LocalDate.now().toString() if dynamic
+                    "Cluj-Napoca"         // Placeholder
+            );
+            kafkaProducerService.sendEmployeeCreatedEvent(event);
+        }
 
         return userMapper.toDto(savedUser);
     }

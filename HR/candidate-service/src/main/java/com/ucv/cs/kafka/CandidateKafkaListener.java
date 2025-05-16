@@ -15,7 +15,7 @@ public class CandidateKafkaListener {
         this.candidateRepository = candidateRepository;
     }
 
-    @KafkaListener(topics = "quickstart", groupId = "candidate-service")
+    @KafkaListener(topics = "candidates-topic", groupId = "candidate-service")
     public void listen(CandidateCreatedEvent event) {
         Candidate candidate = new Candidate();
         candidate.setUserId(Long.parseLong(event.getUserId()));

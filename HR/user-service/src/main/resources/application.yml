@@ -35,4 +35,7 @@ spring:
 
 # Custom properties
 users:
-  topic: quickstart
+  topics:
+    candidate: candidates-topic
+    employee: employees-topic
+
