@@ -1,9 +1,11 @@
 package com.ucv.es.service;
 
 import com.ucv.es.dto.EmployeeDTO;
+import com.ucv.es.dto.EmployeeInfoDTO;
 import com.ucv.es.entity.Employee;
 import com.ucv.es.mapper.EmployeeMapper;
 import com.ucv.es.repository.EmployeeRepository;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +30,17 @@ public class EmployeeService {
     public Optional<EmployeeDTO> getByUserId(Long userId) {
         return employeeRepository.findByUserId(userId)
                 .map(EmployeeMapper::toDTO);
+    }
+
+    public EmployeeInfoDTO getEmployeeInfoById(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        return new EmployeeInfoDTO(
+                employee.getId(),
+                employee.getName(),
+                employee.getJobTitle()
+        );
     }
 
     public boolean existsByUserId(Long userId) {

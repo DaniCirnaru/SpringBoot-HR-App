@@ -1,6 +1,7 @@
 package com.ucv.cs.controller;
 
 import com.ucv.cs.dto.CandidateDTO;
+import com.ucv.cs.dto.CandidateInfoDTO;
 import com.ucv.cs.dto.CreateCandidateDTO;
 import com.ucv.cs.service.CandidateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,12 @@ public class CandidateController {
     @GetMapping("/{id}")
     public ResponseEntity<CandidateDTO> getCandidateById(@PathVariable Long id) {
         return ResponseEntity.ok(candidateService.getCandidateById(id));
+    }
+
+    @GetMapping("/{id}/info")
+    public ResponseEntity<CandidateInfoDTO> getCandidateInfo(@PathVariable Long id) {
+        CandidateInfoDTO dto = candidateService.getCandidateInfoById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")

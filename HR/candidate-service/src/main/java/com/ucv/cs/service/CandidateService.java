@@ -1,6 +1,7 @@
 package com.ucv.cs.service;
 
 import com.ucv.cs.dto.CandidateDTO;
+import com.ucv.cs.dto.CandidateInfoDTO;
 import com.ucv.cs.dto.CreateCandidateDTO;
 import com.ucv.cs.entity.Candidate;
 import com.ucv.cs.entity.CvParseStatus;
@@ -46,6 +47,18 @@ public class CandidateService {
                 .orElseThrow(() -> new ResourceNotFoundException("Candidate"));
         return candidateMapper.toDto(c);
     }
+
+    public CandidateInfoDTO getCandidateInfoById(Long id) {
+        Candidate candidate = candidateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate"));
+
+        return new CandidateInfoDTO(
+                candidate.getId(),
+                candidate.getName(),
+                candidate.getPosition()
+        );
+    }
+
 
     public CandidateDTO updateCandidate(Long id, CreateCandidateDTO dto) {
         Candidate c = candidateRepository.findById(id)

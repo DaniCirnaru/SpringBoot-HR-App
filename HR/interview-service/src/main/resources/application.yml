@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: interview-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/interviewservice
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+candidate:
+  service:
+    url: http://localhost:8084
+
+employee:
+  service:
+    url: http://localhost:8085
+
+server:
+  port: 8086
+
+management:
+  endpoints:
+    web:
+      exposure: "*"
+  endpoint:
+    health:
+      show-details: always
