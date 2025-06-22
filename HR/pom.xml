@@ -20,6 +20,10 @@
     <module>user-service</module>
     <module>auth-service</module>
       <module>api-gateway</module>
+      <module>candidate-service</module>
+    <module>employee-service</module>
+      <module>interview-service</module>
+      <module>matching-service</module>
   </modules>
 
 

@@ -5,11 +5,10 @@ import com.ucv.auth.dto.AuthResponseDTO;
 import com.ucv.auth.dto.LoginDTO;
 import com.ucv.auth.dto.UserDTO;
 import com.ucv.auth.security.JWTGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,10 +20,13 @@ public class AuthController {
 
     private final UserServiceClient userServiceClient;
     private final JWTGenerator jwtGenerator;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserServiceClient userServiceClient, JWTGenerator jwtGenerator) {
+    @Autowired
+    public AuthController(UserServiceClient userServiceClient, JWTGenerator jwtGenerator, PasswordEncoder passwordEncoder) {
         this.userServiceClient = userServiceClient;
         this.jwtGenerator = jwtGenerator;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -38,15 +40,25 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        System.out.println("✅ User found: " + userDTO.username());
+        if (userDTO.role() == null) {
+            throw new IllegalStateException("User role is missing in user-service response.");
+        }
+        System.out.println("🔐 Raw password: " + loginDto.password());
+        System.out.println("🔐 Stored hash: " + userDTO.password());
+        System.out.println("🔐 Matches? " + passwordEncoder.matches(loginDto.password(), userDTO.password()));
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                loginDto.email(), loginDto.password());
+        // 🔒 Check password
+        if (!passwordEncoder.matches(loginDto.password(), userDTO.password())) {
+            System.out.println("❌ Invalid password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        System.out.println("✅ User authenticated: " + userDTO.username());
+
         String roleName = userDTO.role().name();
         String token = jwtGenerator.generateToken(loginDto.email(), roleName);
 
         return ResponseEntity.ok(new AuthResponseDTO(token));
     }
+
 }

@@ -29,6 +29,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/users/email/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         // 🔒 Block requests not coming through API Gateway
         String gatewayHeader = request.getHeader("X-Gateway-Auth");
         if (gatewayHeader == null || !gatewayHeader.equals("true")) {

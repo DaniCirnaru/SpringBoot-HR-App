@@ -1,8 +1,11 @@
 package com.ucv.us.service;
 
-
+import com.ucv.us.dto.CandidateCreatedEvent;
 import com.ucv.us.dto.CreateUserDTO;
+import com.ucv.us.dto.EmployeeCreatedEvent;
+import com.ucv.us.dto.UpdateUserDTO;
 import com.ucv.us.dto.UserDTO;
+import com.ucv.us.dto.UserUpdateResponse;
 import com.ucv.us.entity.Role;
 import com.ucv.us.entity.User;
 import com.ucv.us.exception.DuplicateEmailException;
@@ -24,14 +27,17 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
     public UserService(UserRepository userRepository, RoleRepository roleRepository,
-                       UserMapper userMapper, PasswordEncoder passwordEncoder) {
+                       UserMapper userMapper, PasswordEncoder passwordEncoder,
+                       KafkaProducerService kafkaProducerService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;  // Initialize BCrypt Encoder
+        this.passwordEncoder = passwordEncoder;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     // Register a new user
@@ -47,8 +53,67 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
 
         User savedUser = userRepository.save(user);
+
+        // Send Kafka event if role is CANDIDATE
+        if ("CANDIDATE".equalsIgnoreCase(role.getName())) {
+            CandidateCreatedEvent event = new CandidateCreatedEvent(
+                    savedUser.getId().toString(),
+                    savedUser.getEmail(),
+                    savedUser.getUsername()
+            );
+            kafkaProducerService.sendCandidateCreatedEvent(event);
+        }
+
+        if ("EMPLOYEE".equalsIgnoreCase(role.getName())) {
+            EmployeeCreatedEvent event = new EmployeeCreatedEvent(
+                    savedUser.getId().toString(),
+                    savedUser.getEmail(),
+                    savedUser.getUsername(),
+                    "Software Engineer",  // Placeholder
+                    "Engineering",        // Placeholder
+                    "FULL_TIME",          // Placeholder
+                    "2025-05-15",         // You can use LocalDate.now().toString() if dynamic
+                    "Cluj-Napoca"         // Placeholder
+            );
+            kafkaProducerService.sendEmployeeCreatedEvent(event);
+        }
+
         return userMapper.toDto(savedUser);
     }
+
+    public UserUpdateResponse updateUserByEmail(String email, UpdateUserDTO dto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User with email not found: " + email));
+        return updateUser(user.getId(), dto); // reuse your existing update logic
+    }
+
+
+    public UserUpdateResponse updateUser(Long id, UpdateUserDTO dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean emailChanged = false;
+
+        if (dto.getUsername() != null) {
+            user.setUsername(dto.getUsername());
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new DuplicateEmailException("Email already exists");
+            }
+            user.setEmail(dto.getEmail());
+            emailChanged = true;
+        }
+
+        if (dto.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        User updated = userRepository.save(user);
+        return new UserUpdateResponse(userMapper.toDto(updated), emailChanged);
+    }
+
 
     // Fetch all users
     public List<UserDTO> getAllUsers() {

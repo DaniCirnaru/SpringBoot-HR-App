@@ -6,7 +6,7 @@ server:
 
 user:
   service:
-    url:  http://localhost:8081/api/users
+    url:  http://localhost:8080/api/users
 
 logging:
   level:
