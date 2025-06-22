@@ -14,7 +14,7 @@ A modular HR system built with Spring Boot and Java 17. The system uses a micros
 - Java 17
 - Maven 3.6+
 - MySQL (or another configured database)
-- Docker (optional, for containerization)
+- Docker (Kafka container)
 
 ### 🛠️ Build & Run
 
