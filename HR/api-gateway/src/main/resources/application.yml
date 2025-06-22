@@ -18,7 +18,52 @@ spring:
           predicates:
             - Path=/api/users/**
           filters:
-            - AddRequestHeader=X-Gateway-Auth, true
+            - AddRequestHeader=X-Gateway-Auth,true
+
+        - id: employee-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/employees/**
+          filters:
+            - AddRequestHeader=X-Gateway-Auth,true
+
+        - id: candidate-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/candidates/**
+          filters:
+            - AddRequestHeader=X-Gateway-Auth,true
+
+        - id: interview-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/interviews/**
+          filters:
+            - AddRequestHeader=X-Gateway-Auth,true
+
+        - id: matching-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/matching/**
+          filters:
+            - AddRequestHeader=X-Gateway-Auth,true
+
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins:
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
 management:
   endpoints:
     web:

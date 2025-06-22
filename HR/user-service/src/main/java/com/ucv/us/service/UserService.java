@@ -1,10 +1,11 @@
 package com.ucv.us.service;
 
-
 import com.ucv.us.dto.CandidateCreatedEvent;
 import com.ucv.us.dto.CreateUserDTO;
 import com.ucv.us.dto.EmployeeCreatedEvent;
+import com.ucv.us.dto.UpdateUserDTO;
 import com.ucv.us.dto.UserDTO;
+import com.ucv.us.dto.UserUpdateResponse;
 import com.ucv.us.entity.Role;
 import com.ucv.us.entity.User;
 import com.ucv.us.exception.DuplicateEmailException;
@@ -79,6 +80,40 @@ public class UserService {
 
         return userMapper.toDto(savedUser);
     }
+
+    public UserUpdateResponse updateUserByEmail(String email, UpdateUserDTO dto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User with email not found: " + email));
+        return updateUser(user.getId(), dto); // reuse your existing update logic
+    }
+
+
+    public UserUpdateResponse updateUser(Long id, UpdateUserDTO dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean emailChanged = false;
+
+        if (dto.getUsername() != null) {
+            user.setUsername(dto.getUsername());
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new DuplicateEmailException("Email already exists");
+            }
+            user.setEmail(dto.getEmail());
+            emailChanged = true;
+        }
+
+        if (dto.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        User updated = userRepository.save(user);
+        return new UserUpdateResponse(userMapper.toDto(updated), emailChanged);
+    }
+
 
     // Fetch all users
     public List<UserDTO> getAllUsers() {

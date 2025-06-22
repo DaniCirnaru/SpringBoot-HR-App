@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class EmployeeDTO {
 
+    private Long id;
     private Long userId;
     private String name;
     private String workEmail;

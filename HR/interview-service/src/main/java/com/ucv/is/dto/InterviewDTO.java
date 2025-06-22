@@ -1,7 +1,6 @@
 package com.ucv.is.dto;
 
 import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,4 +13,7 @@ public class InterviewDTO {
     private LocalDateTime scheduledAt;
     private String status;
     private String feedback;
+
+    private List<String> employeeNames;
+    private String candidateName;
 }

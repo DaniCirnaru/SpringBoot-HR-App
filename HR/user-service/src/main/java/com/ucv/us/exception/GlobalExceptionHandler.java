@@ -49,9 +49,24 @@ public class GlobalExceptionHandler {
     }
 
     // 5. Catch all other exceptions (unexpected errors)
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception ex, HttpServletRequest request) {
+//        return buildErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+//    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception ex, HttpServletRequest request) {
-        return buildErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+        // 1. Print the full stack trace so it appears in your console:
+        ex.printStackTrace();
+
+        // 2. (Optionally) include the real message in the JSON for now:
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                ex.getMessage(),   // show the real exception message
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // 🔥 Utility method to build the same error response

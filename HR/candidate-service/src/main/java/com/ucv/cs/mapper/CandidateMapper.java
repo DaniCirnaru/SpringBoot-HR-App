@@ -1,6 +1,7 @@
 package com.ucv.cs.mapper;
 
 import com.ucv.cs.dto.CandidateDTO;
+import com.ucv.cs.dto.CandidateInfoDTO;
 import com.ucv.cs.dto.CreateCandidateDTO;
 import com.ucv.cs.entity.Candidate;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,8 @@ public class CandidateMapper {
         d.setUserId(c.getUserId());
         d.setPosition(c.getPosition());
         d.setCvData(c.getCvData());
+        d.setRecognizedSkills(c.getRecognizedSkills());
+        d.setCvParseStatus(c.getCvParseStatus());
         return d;
     }
 
@@ -24,5 +27,13 @@ public class CandidateMapper {
         c.setPosition(dto.getPosition());
         c.setCvData(dto.getCvData());
         return c;
+    }
+    public CandidateInfoDTO toCandidateInfoDTO(Candidate candidate) {
+        CandidateInfoDTO dto = new CandidateInfoDTO();
+        dto.setId(candidate.getId());
+        dto.setName(candidate.getName());
+        dto.setPosition(candidate.getPosition());
+        dto.setRecognizedSkills(candidate.getRecognizedSkills()); // if stored or derived
+        return dto;
     }
 }

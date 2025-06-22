@@ -4,6 +4,7 @@ import com.ucv.es.dto.EmployeeDTO;
 import com.ucv.es.dto.EmployeeInfoDTO;
 import com.ucv.es.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,16 @@ public class EmployeeController {
     @GetMapping("/{id}/info")
     public ResponseEntity<EmployeeInfoDTO> getEmployeeInfo(@PathVariable Long id) {
         return ResponseEntity.ok(employeeService.getEmployeeInfoById(id));
+    }
+    @Secured("ROLE_USER")
+    @GetMapping("/info")
+    public ResponseEntity<List<EmployeeInfoDTO>> getAllEmployeeInfo() {
+        List<EmployeeInfoDTO> infoList = employeeService.getAllInfo(); // create this method below
+        return ResponseEntity.ok(infoList);
+    }
+    @GetMapping("/info-by-email/{email}")
+    public ResponseEntity<EmployeeInfoDTO> getEmployeeInfoByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(employeeService.getEmployeeInfoByEmail(email));
     }
 
 

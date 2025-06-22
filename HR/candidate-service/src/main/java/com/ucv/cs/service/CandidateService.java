@@ -1,8 +1,10 @@
 package com.ucv.cs.service;
 
+import com.ucv.cs.client.UserClient;
 import com.ucv.cs.dto.CandidateDTO;
 import com.ucv.cs.dto.CandidateInfoDTO;
 import com.ucv.cs.dto.CreateCandidateDTO;
+import com.ucv.cs.dto.UserDTO;
 import com.ucv.cs.entity.Candidate;
 import com.ucv.cs.entity.CvParseStatus;
 import com.ucv.cs.exception.ResourceNotFoundException;
@@ -11,6 +13,7 @@ import com.ucv.cs.repository.CandidateRepository;
 import com.ucv.cs.util.SkillExtractor;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +32,8 @@ public class CandidateService {
 
     @Autowired
     private CandidateMapper candidateMapper;
+    @Autowired
+    private UserClient userClient;
 
     public CandidateDTO createCandidate(CreateCandidateDTO dto) {
         Candidate c = candidateMapper.toEntity(dto);
@@ -36,12 +41,39 @@ public class CandidateService {
         return candidateMapper.toDto(s);
     }
 
+    public CandidateInfoDTO getCandidateInfoByUserId(Long userId) {
+        Candidate candidate = candidateRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate not found for userId: " + userId));
+        return candidateMapper.toCandidateInfoDTO(candidate);
+    }
+
+    public void uploadCvByUserId(Long userId, MultipartFile file) {
+        Candidate candidate = candidateRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate not found for userId: " + userId));
+        try {
+            candidate.setCvData(file.getBytes());
+            candidateRepository.save(candidate);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload CV", e);
+        }
+    }
+
+    public Candidate getByEmail(String email) {
+        UserDTO user = userClient.getUserByEmail(email); // call user service
+        Long userId = user.getId(); // get ID
+        return candidateRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Candidate not found for user ID: " + userId));
+    }
     public List<CandidateDTO> getAllCandidates() {
         return candidateRepository.findAll().stream()
                 .map(candidateMapper::toDto)
                 .collect(Collectors.toList());
     }
 
+    public Candidate getCandidateEntityById(Long id) {
+        return candidateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate"));
+    }
     public CandidateDTO getCandidateById(Long id) {
         Candidate c = candidateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Candidate"));
@@ -55,7 +87,8 @@ public class CandidateService {
         return new CandidateInfoDTO(
                 candidate.getId(),
                 candidate.getName(),
-                candidate.getPosition()
+                candidate.getPosition(),
+                candidate.getRecognizedSkills()
         );
     }
 
@@ -71,12 +104,19 @@ public class CandidateService {
         return candidateMapper.toDto(u);
     }
 
+    public Candidate updateSkills(Long id, List<String> skills) {
+        Candidate candidate = getCandidateEntityById(id);
+        candidate.setRecognizedSkills(skills);
+        return candidateRepository.save(candidate);
+    }
+
     public void deleteCandidate(Long id) {
         if (!candidateRepository.existsById(id)) {
             throw new ResourceNotFoundException("Candidate");
         }
         candidateRepository.deleteById(id);
     }
+
 
     // ✅ New method for uploading CVs
     public void uploadCv(Long candidateId, MultipartFile file) {
@@ -103,4 +143,9 @@ public class CandidateService {
 
         candidateRepository.save(candidate);
     }
+    public CandidateInfoDTO getCandidateInfoByEmail(String email) {
+        Candidate candidate = getByEmail(email); // or whatever lookup method you use
+        return candidateMapper.toCandidateInfoDTO(candidate);
+    }
+
 }

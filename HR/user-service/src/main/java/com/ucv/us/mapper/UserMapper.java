@@ -1,9 +1,9 @@
 package com.ucv.us.mapper;
 
-import com.ucv.us.dto.UserDTO;
 import com.ucv.us.dto.CreateUserDTO;
-import com.ucv.us.entity.User;
+import com.ucv.us.dto.UserDTO;
 import com.ucv.us.entity.Role;
+import com.ucv.us.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +16,7 @@ public class UserMapper {
     public UserMapper(RoleMapper roleMapper) {
         this.roleMapper = roleMapper;
     }
+
     public UserDTO toDto(User user) {
         if (user == null) {
             return null;
@@ -25,6 +26,7 @@ public class UserMapper {
         userDTO.setUsername(user.getUsername());
         userDTO.setEmail(user.getEmail());
         userDTO.setRole(roleMapper.toDto(user.getRole()));
+        userDTO.setPassword(user.getPassword());
         return userDTO;
     }
 

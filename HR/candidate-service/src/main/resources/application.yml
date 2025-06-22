@@ -38,7 +38,7 @@ feign:
 
 user:
   service:
-    url: http://localhost:8083
+    url: http://localhost:8080
 
 logging:
   level:

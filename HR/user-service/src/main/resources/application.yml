@@ -1,5 +1,22 @@
+
+
+# Include full exception details in error responses
 server:
   port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
+
+logging:
+  # Keep your own code at DEBUG, everything else at INFO+
+  level:
+    root: INFO
+    com.ucv.us: DEBUG
+
+    # Silence Kafka metrics spam
+    org.apache.kafka: WARN
+    org.apache.kafka.clients.consumer.internals.KafkaMetricsCollector: WARN
 
 spring:
   datasource:
@@ -19,7 +36,6 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
 
-
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -33,9 +49,7 @@ spring:
         spring.json.trusted.packages: '*'
         spring.json.value.default.type: com.ucv.us.dto.CandidateCreatedEvent
 
-# Custom properties
 users:
   topics:
     candidate: candidates-topic
     employee: employees-topic
-
